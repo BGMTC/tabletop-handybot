@@ -85,10 +85,11 @@ class TabletopHandyBotNode(Node):
 
         self.logger = self.get_logger()
 
-        self.cv_bridge = CvBridge()
+        self.cv_bridge = CvBridge() # used to convert between ROS Image messages and OpenCV images
         self.gripper_joint_name = "gripper_joint"
-        callback_group = ReentrantCallbackGroup()
-        # Create MoveIt 2 interface
+        callback_group = ReentrantCallbackGroup() # This allows multiple callbacks to be executed concurrently, which can be useful for handling multiple tasks simultaneously without blocking each other
+        
+        # Create MoveIt 2 interface for the robot and gripper
         self.arm_joint_names = [
             "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"
         ]
@@ -110,9 +111,10 @@ class TabletopHandyBotNode(Node):
             callback_group=callback_group,
             gripper_command_action_name="/gripper_controller/gripper_cmd",
         )
-        self.tf_buffer = tf2_ros.Buffer()
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
+        self.tf_buffer = tf2_ros.Buffer() # stores the transformations.
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self) # subscribes to the transform messages and populates the tf_buffer.
 
+        # setting up the grounded sam models
         self.grounding_dino_model = Model(
             model_config_path=GROUNDING_DINO_CONFIG_PATH,
             model_checkpoint_path=GROUNDING_DINO_CHECKPOINT_PATH,
@@ -121,11 +123,14 @@ class TabletopHandyBotNode(Node):
             checkpoint=SAM_CHECKPOINT_PATH)
         self.sam.to(device=DEVICE)
         self.sam_predictor = SamPredictor(self.sam)
+
+        # setting up the openai api
         self.openai = openai.OpenAI()
         self.assistant: Assistant = get_or_create_assistant(
             self.openai, assistant_id)
         self.logger.info(f"Loaded assistant with ID: {self.assistant.id}")
 
+        # Setting up parameters to be used later, where they are used is to be seen
         self.annotate = annotate
         self.publish_point_cloud = publish_point_cloud
         self.n_frames_processed = 0
@@ -139,31 +144,40 @@ class TabletopHandyBotNode(Node):
         self.offset_y = offset_y
         self.offset_z = offset_z
 
+        # sets up ROS2 subscriber to the colour images
         self.image_sub = self.create_subscription(Image,
                                                   "/camera/color/image_raw",
                                                   self.image_callback, 10)
+         # sets up ROS2 subscriber to the depth images
         self.depth_sub = self.create_subscription(
             Image, "/camera/aligned_depth_to_color/image_raw",
             self.depth_callback, 10)
+         # sets up ROS2 subscriber to the joint states
         self.joint_states_sub = self.create_subscription(
             JointState, "/joint_states", self.joint_states_callback, 10)
 
+        # creates a publsihed of the point cloud data
         if self.publish_point_cloud:
             self.point_cloud_pub = self.create_publisher(
                 PointCloud2, "/point_cloud", 2)
+        # creates a subscriber to the prompts topic and triggers the start callback. 
         self.prompt_sub = self.create_subscription(
             String,
             "/prompt",
             self.start,
             10,
             callback_group=MutuallyExclusiveCallbackGroup())
+        # creates a subscriber to the /save_images topic to trigger the save image callback?
         self.save_images_sub = self.create_subscription(
             String, "/save_images", self.save_images, 10)
+        # creates a subscriber to the /detect_objects topic to trigger the detect objects callback?
         self.detect_objects_sub = self.create_subscription(
             String, "/detect_objects", self.detect_objects_cb, 10)
+        # creates a subscriber to the /release_above topic to trigger the gripper release above callback?
         self.release_at_sub = self.create_subscription(Int64, "/release_above",
                                                        self.release_above_cb,
                                                        10)
+        # creates a subscriber to the /pick_object topic to trigger the pick object callback?
         self.pick_object_sub = self.create_subscription(
             Int64, "/pick_object", self.pick_object_cb, 10)
 
