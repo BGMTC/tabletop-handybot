@@ -90,14 +90,14 @@ class TabletopHandyBotNode(Node):
         callback_group = ReentrantCallbackGroup()
         # Create MoveIt 2 interface
         self.arm_joint_names = [
-            "joint_1", "joint_2", "joint_3", "joint_4", "joint_5", "joint_6"
+            "panda_joint1", "panda_joint2", "panda_joint3", "panda_joint4", "panda_joint5", "panda_joint6", "panda_joint7"
         ]
         self.moveit2 = MoveIt2(
             node=self,
             joint_names=self.arm_joint_names,
-            base_link_name="base_link",
-            end_effector_name="link_6",
-            group_name="ar_manipulator",
+            base_link_name="panda_link0",
+            end_effector_name="panda_link7",
+            group_name="panda_arm",
             callback_group=callback_group,
         )
         self.moveit2.planner_id = "RRTConnectkConfigDefault"
@@ -385,7 +385,7 @@ class TabletopHandyBotNode(Node):
 
             # convert it to a ROS PointCloud2 message
             points = np.asarray(pcd.points)
-            pc_msg = point_cloud_to_msg(points, "/camera_color_frame")
+            pc_msg = point_cloud_to_msg(points, "/camera_color_frame") # maybe change this to /camera_depth_optical_frame
             self.point_cloud_pub.publish(pc_msg)
 
         self.n_frames_processed += 1
@@ -526,8 +526,8 @@ class TabletopHandyBotNode(Node):
     @cached_property
     def cam_to_base_affine(self):
         cam_to_base_link_tf = self.tf_buffer.lookup_transform(
-            target_frame="base_link",
-            source_frame="camera_color_frame",
+            target_frame="panda_link0",
+            source_frame="camera_color_frame", # maybe change this to /camera_depth_optical_frame
             time=Time(),
             timeout=Duration(seconds=5))
         cam_to_base_rot = Rotation.from_quat([

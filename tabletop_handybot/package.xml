@@ -10,14 +10,15 @@
   <author email="ycheng517@gmail.com">Yifei Cheng</author>
 
   <buildtool_depend>ament_python</buildtool_depend>
+  <buildtool_depend>python3-catkin-pkg-modules</buildtool_depend>
 
-  <exec_depend>ar_moveit_config</exec_depend>
+  <!-- <exec_depend>ar_moveit_config</exec_depend> -->
   <exec_depend>cv_bridge</exec_depend>
-  <exec_depend>easy_handeye2</exec_depend>
+  <!-- <exec_depend>easy_handeye2</exec_depend> -->
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>realsense2_camera</exec_depend>
-  <exec_depend>ros2_aruco</exec_depend>
+  <!-- <exec_depend>ros2_aruco</exec_depend> -->
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>

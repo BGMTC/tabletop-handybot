@@ -31,8 +31,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'tabletop_handybot_node = tabletop_handybot.tabletop_handybot_node:main',
-            'audio_prompt_node = tabletop_handybot.audio_prompt_node:main',
+            'simple_bot_node = tabletop_handybot.simple_bot_node:main',
+            # 'audio_prompt_node = tabletop_handybot.audio_prompt_node:main',
         ],
     },
 )
